@@ -2,6 +2,19 @@ require 'sinatra'
 require "sinatra/reloader"
 require 'rest-client'
 require 'json'
+require 'httparty'
+require 'nokogiri'
+require 'uri'
+require 'date'
+require 'csv'
+
+before do
+    p "************************"
+    p params
+    p request.path_info #사용자가 요청보낸 경로
+    p request.fullpath # 파라미터까지 포함한 경로
+    p "************************"
+end
 
 get '/' do
   'Hello world! welcome'
@@ -116,7 +129,34 @@ get '/lotto-sample' do
     else '꽝'
     end
     
-    
-    
     erb :lottosample
+end
+
+get '/form' do
+    erb :form
+end
+
+get '/search' do
+    @keyword = params[:keyword]
+    url = 'https://search.naver.com/search.naver?query='
+    # erb :search
+    redirect to (url+@keyword)
+end
+
+get '/opgg' do
+    erb :opgg
+end
+
+get '/opggresult' do
+    url = 'http://www.op.gg/summoner/userName='
+    @userName = params[:userName]
+    @encodeName = URI.encode(@userName)
+    
+    @res = HTTParty.get(url+@encodeName)
+    @doc = Nokogiri::HTML(@res.body)
+    
+    @win = @doc.css("#SummonerLayoutContent > div.tabItem.Content.SummonerLayoutContent.summonerLayout-summary > div.SideContent > div.TierBox.Box > div.SummonerRatingMedium > div.TierRankInfo > div.TierInfo > span.WinLose > span.wins")
+    @lose = @doc.css("#SummonerLayoutContent > div.tabItem.Content.SummonerLayoutContent.summonerLayout-summary > div.SideContent > div.TierBox.Box > div.SummonerRatingMedium > div.TierRankInfo > div.TierInfo > span.WinLose > span.losses") 
+    @rank = @doc.css("#SummonerLayoutContent > div.tabItem.Content.SummonerLayoutContent.summonerLayout-summary > div.SideContent > div.TierBox.Box > div.SummonerRatingMedium > div.TierRankInfo > div.TierRank > span")
+    erb :opggresult
 end
