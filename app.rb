@@ -1,5 +1,7 @@
 require 'sinatra'
 require "sinatra/reloader"
+require 'rest-client'
+require 'json'
 
 get '/' do
   'Hello world! welcome'
@@ -64,5 +66,57 @@ get '/lunch-hash' do
 end
 
 get '/randomgame/:name' do
+    "랜덤게임입니다."
+end
+
+get '/lotto-sample' do
+    #랜덤하게 로또번호 추첨
+    @lotto = (1..45).to_a.sample(6).sort
+    @lotto = [6, 11, 15, 17, 23, 39]
+    #erb파일 랜더링
+    url = "http://www.nlotto.co.kr/common.do?method=getLottoNumber&drwNo=809"
+    @lotto_info = RestClient.get(url) # json
+    @lotto_hash = JSON.parse(@lotto_info)
     
+    @winner = []
+    @lotto_hash.each do |k, v|
+        if k.include?('drwtNo')
+            #배열에 저장
+            @winner << v
+        end
+    end
+    
+    #winner 와 lotto 를 비교해서
+    #몇개가 일치하는지 연산
+    @matchnum = (@winner & @lotto).length
+    @bonusnum = @lotto_hash["bnusNo"]
+    
+    # 몇등인지????
+    # if (@matchnum == 6) then @result = "1등"
+    # elsif (@matchnum == 5 && @lotto.include?(@bonusnum))
+    #     @result = "2등"
+    # elsif (@matchnum == 5) then @result = "3등"
+    # elsif (@matchnum == 4)
+    #     @result = "4등"
+    # elsif (@matchnum == 3)
+    #     @result = "5등"
+    # else 
+    #     @result = "꽝"
+    # end
+    
+    #몇등인지 ??? (case)
+    
+    @result = 
+    case [@matchnum, @lotto.include?(@bonusnum)]
+    when [6, false] then "1등"
+    when [5, true] then "2등"
+    when [5, false] then "3등"
+    when [4, false] then "4등"
+    when [3, false] then "5등"
+    else '꽝'
+    end
+    
+    
+    
+    erb :lottosample
 end
