@@ -62,3 +62,7 @@ get '/lunch-hash' do
     #이름과 url을 넘겨서 erb를 랜더링 한다.
     erb :lunchhash
 end
+
+get '/randomgame/:name' do
+    
+end
