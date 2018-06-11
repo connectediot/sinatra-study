@@ -169,3 +169,11 @@ get '/opggresult' do
     
     erb :opggresult
 end
+
+get '/oplog' do
+    @log = []
+    CSV.foreach('opgg.csv') do |row|
+        @log << row
+    end
+    erb :oplog 
+end
